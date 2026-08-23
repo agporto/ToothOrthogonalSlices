@@ -1,0 +1,61 @@
+name: Publish Tooth Orthogonal Slices source
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/bootstrap-module.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: ".bootstrap/part-*"
+
+      - name: Reconstruct and verify source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .bootstrap/part-* | base64 --decode > /tmp/source.zip
+          echo "76f5b3f0b2fe5eabf14dbdd7d73b7ccd835a9d62da92c1c0d057ce6646531918  /tmp/source.zip" | sha256sum --check -
+          rm -rf /tmp/tooth-source
+          mkdir -p /tmp/tooth-source
+          unzip -q /tmp/source.zip -d /tmp/tooth-source
+          test -f /tmp/tooth-source/source/ToothOrthogonalSlices/ToothOrthogonalSlices.py
+          test -f /tmp/tooth-source/source/ToothOrthogonalSlices/Resources/Icons/ToothOrthogonalSlices.png
+
+      - name: Install dependencies and verify source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -r /tmp/tooth-source/source/requirements-test.txt
+          python -m compileall -q /tmp/tooth-source/source/ToothOrthogonalSlices
+          python -m pytest -q /tmp/tooth-source/source/ToothOrthogonalSlices/Testing/Python
+
+      - name: Publish source tree and tag v0.1.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a /tmp/tooth-source/source/. .
+          rm -rf .bootstrap
+          rm -f .github/workflows/bootstrap-module.yml
+          git add -A
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Add Tooth Orthogonal Slices module"
+          git tag -a v0.1.0 -m "Tooth Orthogonal Slices v0.1.0"
+          git push origin HEAD:main
+          git push origin v0.1.0
