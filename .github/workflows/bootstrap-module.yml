@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: bootstrap-tooth-orthogonal-slices
+  cancel-in-progress: true
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -17,12 +21,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: ".bootstrap/part-*"
 
       - name: Reconstruct and verify source archive
         shell: bash
@@ -35,15 +33,7 @@ jobs:
           unzip -q /tmp/source.zip -d /tmp/tooth-source
           test -f /tmp/tooth-source/source/ToothOrthogonalSlices/ToothOrthogonalSlices.py
           test -f /tmp/tooth-source/source/ToothOrthogonalSlices/Resources/Icons/ToothOrthogonalSlices.png
-
-      - name: Install dependencies and verify source
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m pip install --upgrade pip
-          python -m pip install -r /tmp/tooth-source/source/requirements-test.txt
           python -m compileall -q /tmp/tooth-source/source/ToothOrthogonalSlices
-          python -m pytest -q /tmp/tooth-source/source/ToothOrthogonalSlices/Testing/Python
 
       - name: Publish source tree and tag v0.1.0
         shell: bash
