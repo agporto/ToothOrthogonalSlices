@@ -1,0 +1,6 @@
+numpy>=1.26
+scipy>=1.11
+pytest>=8
+vtk>=9.2
+tifffile>=2024.2
+Pillow>=10

@@ -1,0 +1,14 @@
+# Legacy Slicer extension-description file. The authoritative metadata is in CMakeLists.txt.
+scm git
+scmurl https://github.com/agporto/SlicerToothOrthogonalSlices
+scmrevision main
+depends NA
+build_subdirectory .
+homepage https://github.com/agporto/SlicerToothOrthogonalSlices
+contributors Arthur Porto (Florida Museum of Natural History, University of Florida)
+category SlicerMorph
+iconurl https://raw.githubusercontent.com/agporto/SlicerToothOrthogonalSlices/main/ToothOrthogonalSlices/Resources/Icons/ToothOrthogonalSlices.png
+status Experimental
+description Estimate an editable curved geometric axis through a tooth CT and export local orthogonal cross-sections with spatial metadata and quality control.
+screenshoturls
+enabled 1
