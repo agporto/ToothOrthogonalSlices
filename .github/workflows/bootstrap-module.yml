@@ -1,22 +1,20 @@
 name: Publish Tooth Orthogonal Slices source
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/bootstrap-module.yml"
+  issues:
+    types: [opened]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: bootstrap-tooth-orthogonal-slices
-  cancel-in-progress: true
+  group: publish-tooth-orthogonal-slices
+  cancel-in-progress: false
 
 jobs:
   publish:
+    if: github.event_name == 'workflow_dispatch' || github.event.issue.title == 'publish-source-root'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,17 +34,18 @@ jobs:
           test -f /tmp/tooth-source/source/ToothOrthogonalSlices/Resources/Icons/ToothOrthogonalSlices.png
           python -m compileall -q /tmp/tooth-source/source/ToothOrthogonalSlices
 
-      - name: Publish source tree and tag v0.1.0
+      - name: Publish as the repository's single root commit
         shell: bash
         run: |
           set -euo pipefail
-          cp -a /tmp/tooth-source/source/. .
-          rm -rf .bootstrap
-          rm -f .github/workflows/bootstrap-module.yml
-          git add -A
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan published-source
+          git rm -rf .
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/tooth-source/source/. .
+          git add -A
           git commit -m "Add Tooth Orthogonal Slices module"
-          git tag -a v0.1.0 -m "Tooth Orthogonal Slices v0.1.0"
-          git push origin HEAD:main
-          git push origin v0.1.0
+          git tag -f -a v0.1.0 -m "Tooth Orthogonal Slices v0.1.0"
+          git push --force origin HEAD:main
+          git push --force origin v0.1.0
